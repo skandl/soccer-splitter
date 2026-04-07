@@ -167,20 +167,79 @@
     flex-wrap: wrap;
   }
 
-  .chip {
+  .name-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
     background: #0066cc;
     color: white;
-    padding: 6px 12px;
+    padding: 4px 6px 4px 12px;
     border-radius: 20px;
     font-size: 13px;
     font-weight: 500;
-    cursor: pointer;
-    border: none;
     font-family: inherit;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
-  .chip:hover {
-    background: #0052a3;
+  .name-chip-text {
+    cursor: default;
+    padding: 2px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+  }
+
+  .name-chip-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+  }
+
+  .name-chip:hover .name-chip-actions,
+  .name-chip:focus-within .name-chip-actions,
+  .name-chip.name-chip--open .name-chip-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  @media (hover: none) {
+    .name-chip .name-chip-actions {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  .chip-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.22);
+    color: white;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .chip-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.38);
+  }
+
+  .chip-icon-btn:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline-offset: 1px;
+  }
+
+  .chip-icon-btn svg {
+    display: block;
   }
 
   .column-names {
@@ -271,7 +330,7 @@
         <h3>Name pool</h3>
         <span id="poolCount" class="column-count"></span>
       </div>
-      <p class="note" style="margin-top:0;">Click a name to add it to Group 1. Names already in a group appear gray.</p>
+      <p class="note" style="margin-top:0;">Click a name to add it to Group 1. Names already in a group appear gray. In each group, hover or click a name to show remove (×) and next-column (→) actions.</p>
       <div id="pool" class="pool-names"></div>
     </div>
 
@@ -378,6 +437,39 @@ function formatColumnForClipboard(groupIndex) {
   return lines.join('\n');
 }
 
+function iconSvgRemove() {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', '14');
+  svg.setAttribute('height', '14');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '2.5');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', 'M18 6L6 18M6 6l12 12');
+  svg.appendChild(path);
+  return svg;
+}
+
+function iconSvgNextColumn() {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', '14');
+  svg.setAttribute('height', '14');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '2.5');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', 'M4 12h14M13 6l7 6-7 6');
+  svg.appendChild(path);
+  return svg;
+}
+
 async function copyColumn(groupIndex, buttonEl) {
   const text = formatColumnForClipboard(groupIndex);
   try {
@@ -438,11 +530,41 @@ function renderColumns() {
       namesEl.appendChild(hint);
     } else {
       columns[i].forEach(name => {
-        const chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'chip';
-        chip.textContent = name;
-        chip.addEventListener('click', () => {
+        const row = document.createElement('div');
+        row.className = 'name-chip';
+        row.setAttribute('role', 'group');
+        row.setAttribute('aria-label', `${name} in group ${i + 1}`);
+
+        const label = document.createElement('span');
+        label.className = 'name-chip-text';
+        label.textContent = name;
+
+        const actions = document.createElement('span');
+        actions.className = 'name-chip-actions';
+
+        const btnRemove = document.createElement('button');
+        btnRemove.type = 'button';
+        btnRemove.className = 'chip-icon-btn';
+        btnRemove.setAttribute('aria-label', 'Remove from column');
+        btnRemove.title = 'Remove from column';
+        btnRemove.appendChild(iconSvgRemove());
+        btnRemove.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idx = columns[i].indexOf(name);
+          if (idx !== -1) {
+            columns[i].splice(idx, 1);
+          }
+          renderAll();
+        });
+
+        const btnNext = document.createElement('button');
+        btnNext.type = 'button';
+        btnNext.className = 'chip-icon-btn';
+        btnNext.setAttribute('aria-label', 'Move to next column');
+        btnNext.title = 'Move to next column';
+        btnNext.appendChild(iconSvgNextColumn());
+        btnNext.addEventListener('click', (e) => {
+          e.stopPropagation();
           const next = (i + 1) % numGroups;
           const idx = columns[i].indexOf(name);
           if (idx !== -1) {
@@ -451,7 +573,21 @@ function renderColumns() {
           columns[next].push(name);
           renderAll();
         });
-        namesEl.appendChild(chip);
+
+        actions.appendChild(btnRemove);
+        actions.appendChild(btnNext);
+
+        row.appendChild(label);
+        row.appendChild(actions);
+
+        row.addEventListener('click', (e) => {
+          if (e.target.closest('.chip-icon-btn')) {
+            return;
+          }
+          row.classList.toggle('name-chip--open');
+        });
+
+        namesEl.appendChild(row);
       });
     }
 
