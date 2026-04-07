@@ -80,8 +80,16 @@
     margin-bottom: 20px;
   }
 
-  .pool-wrap h3 {
-    margin: 0 0 12px 0;
+  .pool-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .pool-header h3 {
+    margin: 0;
     color: #333;
     font-size: 14px;
   }
@@ -259,7 +267,10 @@
     </div>
 
     <div class="pool-wrap">
-      <h3>Name pool</h3>
+      <div class="pool-header">
+        <h3>Name pool</h3>
+        <span id="poolCount" class="column-count"></span>
+      </div>
       <p class="note" style="margin-top:0;">Click a name to add it to Group 1. Names already in a group appear gray.</p>
       <div id="pool" class="pool-names"></div>
     </div>
@@ -327,16 +338,22 @@ function shuffleInPlace(arr) {
 
 function renderPool() {
   const pool = document.getElementById('pool');
+  const countEl = document.getElementById('poolCount');
   pool.innerHTML = '';
   const used = usedSet();
 
   if (parsedNames.length === 0) {
+    countEl.textContent = '';
     const hint = document.createElement('span');
     hint.className = 'empty-hint';
     hint.textContent = 'No names parsed yet.';
     pool.appendChild(hint);
     return;
   }
+
+  const total = parsedNames.length;
+  const available = parsedNames.filter(n => !used.has(n)).length;
+  countEl.textContent = `${total} ${total === 1 ? 'name' : 'names'} · ${available} available`;
 
   parsedNames.forEach(name => {
     const btn = document.createElement('button');
@@ -483,6 +500,7 @@ function onInputChanged() {
   if (parsedNames.length === 0) {
     workspace.style.display = 'none';
     columns = Array.from({ length: numGroups }, () => []);
+    document.getElementById('poolCount').textContent = '';
     return;
   }
 
