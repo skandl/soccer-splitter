@@ -316,15 +316,6 @@
   <div class="section" id="workspace" style="display: none;">
     <div class="section-title">2. Pool and groups</div>
 
-    <div class="controls-row">
-      <label class="control">
-        Number of groups
-        <input type="number" id="numGroups" min="2" max="12" value="2">
-      </label>
-      <button type="button" class="primary" id="randomBtn">Randomly distribute remaining</button>
-      <button type="button" class="secondary" id="clearColumnsBtn">Clear columns</button>
-    </div>
-
     <div class="pool-wrap">
       <div class="pool-header">
         <h3>Name pool</h3>
@@ -332,6 +323,15 @@
       </div>
       <p class="note" style="margin-top:0;">Click a name to add it to Group 1. Names already in a group appear gray. In each group, hover or click a name to show remove (×) and next-column (→) actions.</p>
       <div id="pool" class="pool-names"></div>
+    </div>
+
+    <div class="controls-row">
+      <label class="control">
+        Number of groups
+        <input type="number" id="numGroups" min="2" max="12" value="2">
+      </label>
+      <button type="button" class="primary" id="randomBtn">Randomly distribute remaining</button>
+      <button type="button" class="secondary" id="clearColumnsBtn">Clear columns</button>
     </div>
 
     <div id="columnsHost" class="columns-grid"></div>
