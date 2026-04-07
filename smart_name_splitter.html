@@ -255,6 +255,7 @@
         <input type="number" id="numGroups" min="2" max="12" value="2">
       </label>
       <button type="button" class="primary" id="randomBtn">Randomly distribute remaining</button>
+      <button type="button" class="secondary" id="clearColumnsBtn">Clear columns</button>
     </div>
 
     <div class="pool-wrap">
@@ -449,6 +450,14 @@ function renderAll() {
   const used = usedSet();
   const remaining = parsedNames.filter(n => !used.has(n)).length;
   document.getElementById('randomBtn').disabled = remaining === 0;
+  document.getElementById('clearColumnsBtn').disabled = used.size === 0;
+}
+
+function clearColumns() {
+  readNumGroupsFromDom();
+  ensureColumnShape();
+  columns = Array.from({ length: numGroups }, () => []);
+  renderAll();
 }
 
 function readNumGroupsFromDom() {
@@ -506,6 +515,7 @@ document.getElementById('nameInput').addEventListener('input', onInputChanged);
 document.getElementById('numGroups').addEventListener('change', onNumGroupsChanged);
 document.getElementById('numGroups').addEventListener('input', onNumGroupsChanged);
 document.getElementById('randomBtn').addEventListener('click', randomDistributeRemaining);
+document.getElementById('clearColumnsBtn').addEventListener('click', clearColumns);
 
 onInputChanged();
 </script>
